@@ -1,0 +1,94 @@
+/* Global theme */
+body {
+  font-family: Arial, sans-serif;
+  background: #e7f3ff; /* Light blue background */
+  margin: 0;
+  padding: 0;
+}
+
+/* Main container */
+.container {
+  max-width: 1000px;
+  margin: 20px auto;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 60, 120, 0.1);
+}
+
+/* Logo area */
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: #0b5ed7; /* Blue tone */
+  text-align: center;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+/* Form inputs */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 12px 0;
+  border: 1px solid #bcd3f0;
+  border-radius: 6px;
+  background: #f8fbff;
+}
+
+/* Buttons */
+button {
+  padding: 10px 15px;
+  background: #0b6cf3;
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  background: #084dbf;
+}
+
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.table th {
+  background: #d8eafe; 
+  color: #063970;
+  padding: 10px;
+}
+
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #d2e0f3;
+}
+
+/* Action links */
+.actions a {
+  margin-right: 10px;
+  color: #0b6cf3;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.actions a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons for logout */
+#logout {
+  float: right;
+  background: #0b5ed7;
+}
+
+#logout:hover {
+  background: #084ab8;
+}

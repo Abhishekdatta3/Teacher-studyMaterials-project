@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Student View</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+<div class="container">
+  <div class="logo">
+  ADstudy
+</div>
+
+  <h2>Student Portal</h2>
+  <button id="logout">Logout</button>
+
+  <h3>Search Materials</h3>
+  <div style="display:flex;gap:8px">
+    <input id="q" placeholder="keyword (title, desc, subject)">
+    <select id="filterDept"><option value="">All Departments</option></select>
+    <select id="filterTopic"><option value="">All Topics</option></select>
+    <select id="filterTeacher"><option value="">All Teachers</option></select>
+    <button id="searchBtn">Search</button>
+  </div>
+
+  <table class="table" id="results"><thead><tr><th>Title</th><th>Subject</th><th>Topic</th><th>Dept</th><th>Teacher</th><th>Actions</th></tr></thead><tbody></tbody></table>
+</div>
+
+<script>
+async function api(path, opts={}){ const r = await fetch(path, opts); return r.json(); }
+async function loadFilters(){
+  const d = await api('/api/departments'); const t = await api('/api/topics'); const teachers = await api('/api/teachers');
+  const fd = document.getElementById('filterDept'), ft = document.getElementById('filterTopic'), fth = document.getElementById('filterTeacher');
+  fd.innerHTML = '<option value="">All Departments</option>'; d.forEach(x=>fd.innerHTML += `<option value="${x.id}">${x.name}</option>`);
+  ft.innerHTML = '<option value="">All Topics</option>'; t.forEach(x=>ft.innerHTML += `<option value="${x.id}">${x.name}</option>`);
+  fth.innerHTML = '<option value="">All Teachers</option>'; teachers.forEach(x=>fth.innerHTML += `<option value="${x.id}">${x.name}</option>`);
+}
+async function search(){
+  const q = document.getElementById('q').value;
+  const department_id = document.getElementById('filterDept').value;
+  const topic_id = document.getElementById('filterTopic').value;
+  const teacher_id = document.getElementById('filterTeacher').value;
+  const url = `/api/materials?q=${encodeURIComponent(q)}&department_id=${department_id}&topic_id=${topic_id}&teacher_id=${teacher_id}&limit=200`;
+  const rows = await api(url);
+  const tb = document.querySelector('#results tbody'); tb.innerHTML='';
+  rows.forEach(r=> tb.innerHTML += `<tr>
+    <td>${r.title}<br><small>${r.description||''}</small></td>
+    <td>${r.subject||''}</td>
+    <td>${r.topic_name||''}</td>
+    <td>${r.department_name||''}</td>
+    <td>${r.teacher_name||''}</td>
+    <td><a href="/api/materials/download/${r.id}">Download</a></td>
+  </tr>`);
+}
+document.getElementById('searchBtn').addEventListener('click', search);
+document.getElementById('logout').addEventListener('click', async ()=>{ await fetch('/api/logout',{method:'POST'}); window.location='/login.html'; });
+(async ()=>{ await loadFilters(); await search(); })();
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Teacher Dashboard</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+<div class="container">
+  <div class="logo">
+  ADstudy
+</div>
+
+  <h2>Teacher Dashboard</h2>
+  <button id="logout">Logout</button>
+  <h3>Upload Material</h3>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <label>Title</label><input name="title" required>
+    <label>Description</label><textarea name="description"></textarea>
+    <div class="row">
+      <div class="col"><label>Subject</label><input name="subject"></div>
+      <div class="col"><label>Class</label><input name="class"></div>
+    </div>
+    <div class="row">
+      <div class="col"><label>Department</label><select id="deptSelect" name="department_id"><option value="">--none--</option></select></div>
+      <div class="col"><label>Topic</label><select id="topicSelect" name="topic_id"><option value="">--none--</option></select></div>
+    </div>
+    <label>File</label><input type="file" name="file" required>
+    <button>Upload</button>
+  </form>
+
+  <h3 style="margin-top:20px">Your Materials</h3>
+  <table class="table" id="materialsTable"><thead><tr><th>Title</th><th>Subject</th><th>Topic</th><th>Dept</th><th>Uploaded</th><th>Actions</th></tr></thead><tbody></tbody></table>
+</div>
+
+<script>
+async function api(path, opts={}) {
+  const res = await fetch(path, opts);
+  return res.json();
+}
+async function loadDeps() {
+  const d = await api('/api/departments');
+  const t = await api('/api/topics');
+  const ds = document.getElementById('deptSelect'), ts = document.getElementById('topicSelect');
+  ds.innerHTML = '<option value="">--none--</option>'; d.forEach(x=>ds.innerHTML += `<option value="${x.id}">${x.name}</option>`);
+  ts.innerHTML = '<option value="">--none--</option>'; t.forEach(x=>ts.innerHTML += `<option value="${x.id}">${x.name}</option>`);
+}
+async function loadMaterials() {
+  const rows = await api('/api/materials?limit=200');
+  const tb = document.querySelector('#materialsTable tbody'); tb.innerHTML = '';
+  const me = await api('/api/me');
+  rows.forEach(r=>{
+    // show only teacher's own materials
+    if (r.teacher_id !== me.user.id) return;
+    tb.innerHTML += `<tr>
+      <td>${r.title}<br><small>${r.description || ''}</small></td>
+      <td>${r.subject||''}</td>
+      <td>${r.topic_name||''}</td>
+      <td>${r.department_name||''}</td>
+      <td>${r.uploaded_at}</td>
+      <td class="actions">
+        <a href="/api/materials/download/${r.id}">Download</a>
+        <a href="#" onclick="edit(${r.id});return false;">Edit</a>
+        <a href="#" onclick="del(${r.id});return false;">Delete</a>
+      </td>
+    </tr>`;
+  });
+}
+async function del(id){
+  if(!confirm('Delete?')) return;
+  const res = await api('/api/materials/' + id, { method: 'DELETE' });
+  if (res.ok) loadMaterials(); else alert(res.error || 'Error');
+}
+function edit(id) {
+  // simple prompt-based edit (for brevity). You can create a full edit form.
+  (async ()=>{
+    const mat = await api('/api/materials/' + id);
+    const title = prompt('Title', mat.title);
+    if (title === null) return;
+    const description = prompt('Description', mat.description || '');
+    const subject = prompt('Subject', mat.subject || '');
+    const r = await api('/api/materials/' + id, { method: 'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, description, subject, topic_id: mat.topic_id, department_id: mat.department_id })});
+    if (r.ok) loadMaterials(); else alert(r.error || 'Error');
+  })();
+}
+document.getElementById('uploadForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch('/api/materials', { method: 'POST', body: fd });
+  const j = await res.json();
+  if (j.ok) { alert('Uploaded'); e.target.reset(); loadMaterials(); }
+  else alert(j.error || 'Upload failed');
+});
+document.getElementById('logout').addEventListener('click', async ()=>{
+  await fetch('/api/logout',{method:'POST'});
+  window.location = '/login.html';
+});
+(async ()=>{ await loadDeps(); await loadMaterials(); })();
+</script>
+</body>
+</html>
